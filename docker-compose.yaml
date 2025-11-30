@@ -1,0 +1,38 @@
+services:
+  web:
+    image: python:3.12-alpine
+    container_name: flask_app
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && flask run --host=0.0.0.0 --port=5000"
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=main.py
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - MYSQL_HOST=db
+      - MYSQL_USER=flaskuser
+      - MYSQL_PASSWORD=flaskpass
+      - MYSQL_DB=flaskdb
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0-oraclelinux8
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: flaskdb
+      MYSQL_USER: flaskuser
+      MYSQL_PASSWORD: flaskpass
+    volumes:
+      - ./db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+
+volumes:
+  db_data:
